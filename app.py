@@ -230,6 +230,51 @@ def summarize_tasks(tasks, chain):
     open_reward = round(sum(units(t.get("reward")) for t in open_tasks), 2)
     top5_subs = sum(int(t.get("submissionCount") or 0) for t in top_subs)
 
+    # capital flow: reward put up, by poster -> mode -> outcome
+    flow_posters = sorted(by_req.values(), key=lambda x: -x["reward"])[:5]
+    flow_other = [p for p in by_req.values() if p not in flow_posters]
+    p_index = {p["addr"].lower(): i for i, p in enumerate(flow_posters)}
+    other_key = "__other__"
+    p_nodes = [{"name": short_addr(p["addr"]), "reward": round(p["reward"], 2)} for p in flow_posters]
+    if flow_other:
+        p_nodes.append({"name": f"{len(flow_other)} more wallets", "reward": round(sum(x["reward"] for x in flow_other), 2)})
+    mode_order = ["bounty", "claim", "pitch", "benchmark", "auction"]
+    mode_nodes = []
+    for mo in mode_order:
+        r = sum(units(t.get("reward")) for t in tasks if t.get("mode") == mo)
+        if r > 0:
+            mode_nodes.append({"name": mo, "reward": round(r, 2)})
+    m_index = {m["name"]: i for i, m in enumerate(mode_nodes)}
+    out_order = ["completed", "open", "pending_approval", "claimed", "expired", "cancelled", "worker_selected"]
+    out_nodes = []
+    for st in out_order:
+        r = sum(units(t.get("reward")) for t in tasks if t.get("status") == st)
+        if r > 0:
+            out_nodes.append({"name": st, "reward": round(r, 2)})
+    o_index = {o["name"]: i for i, o in enumerate(out_nodes)}
+    links1 = {}
+    for t in tasks:
+        a = (t.get("requester") or "").lower()
+        pi = p_index.get(a, len(p_nodes) - 1 if flow_other else 0)
+        mi = m_index.get(t.get("mode"))
+        if mi is None:
+            continue
+        key = (pi, mi)
+        links1[key] = links1.get(key, 0) + units(t.get("reward"))
+    links2 = {}
+    for t in tasks:
+        mi = m_index.get(t.get("mode")); oi = o_index.get(t.get("status"))
+        if mi is None or oi is None:
+            continue
+        key = (mi, oi)
+        links2[key] = links2.get(key, 0) + units(t.get("reward"))
+    flow = {
+        "posters": p_nodes, "modes": mode_nodes, "outcomes": out_nodes,
+        "links1": [[a, b, round(v, 2)] for (a, b), v in sorted(links1.items())],
+        "links2": [[a, b, round(v, 2)] for (a, b), v in sorted(links2.items())],
+        "total": round(total_reward, 2),
+    }
+
     board = []
     for t in sorted(tasks, key=lambda x: x["createdAt"]):
         board.append([
@@ -259,6 +304,7 @@ def summarize_tasks(tasks, chain):
         "openReward": open_reward,
         "top5SubsShare": pct(top5_subs, total_subs),
         "board": board,
+        "flow": flow,
         "under5": sum(1 for r in rewards if r < 5),
         "submissions": total_subs,
         "subsPerTask": round(total_subs / n, 1) if n else 0,

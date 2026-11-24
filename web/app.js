@@ -272,6 +272,59 @@
       </tbody>`;
   }
 
+  /* ------------------------------------------------------------ money */
+
+  const OUT_COLOR = {
+    completed: '#EFE9E2', open: '#D9A097', claimed: '#8F857B', pending_approval: '#8F857B',
+    worker_selected: '#8F857B', expired: '#5A2A34', cancelled: '#453E37',
+  };
+
+  function moneyBar(segments, total, track) {
+    const W = Math.max(track.clientWidth || 800, 300), H = 30;
+    let x = 0, svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">`;
+    segments.forEach((s, i) => {
+      const w = Math.max(2, (s.value / total) * W);
+      const last = i === segments.length - 1;
+      const ww = Math.min(w, W - x);
+      svg += `<rect x="${x.toFixed(1)}" y="0" width="${Math.max(1, ww - 1).toFixed(1)}" height="${H}" fill="${s.color}" ${last ? `rx="6"` : ''}/>`;
+      x += w;
+    });
+    svg += '</svg>';
+    return svg;
+  }
+
+  function renderFlow() {
+    const box = $('#flow');
+    const f = chain().tasks.flow;
+    if (!f || !f.posters.length) { box.innerHTML = ''; return; }
+    const total = f.total;
+    const order = ['completed', 'open', 'claimed', 'pending_approval', 'expired', 'cancelled', 'worker_selected'];
+    const outs = f.outcomes.slice().sort((a, b) => order.indexOf(a.name) - order.indexOf(b.name));
+    const posterColors = ['#FFF6E8', '#EFE9E2', '#D9A097', '#B0A79D', '#8F857B', '#5A2A34'];
+
+    const barHtml = (segments, label) => `
+      <div class="money-row">
+        <p class="mono small muted money-k">${label}</p>
+        <div class="money-track" data-bar></div>
+        <div class="money-legend">
+          ${segments.map((s) => `<span class="mi"><i style="background:${s.color}"></i><span class="mono">${esc(s.name)}</span> <span class="mono muted">${usd(s.value)} · ${pctTxt(100 * s.value / total)}</span></span>`).join('')}
+        </div>
+      </div>`;
+    box.innerHTML = barHtml(f.posters.map((p, i) => ({ name: p.name, value: p.reward, color: posterColors[i] || '#5A2A34' })), 'Who put it up')
+      + barHtml(outs.map((o) => ({ name: STATUS_LABEL[o.name] || o.name, value: o.reward, color: OUT_COLOR[o.name] || '#8F857B' })), 'Where it is now');
+    const tracks = $$('[data-bar]', box);
+    tracks.forEach((track, i) => {
+      const segs = i === 0
+        ? f.posters.map((p, j) => ({ name: p.name, value: p.reward, color: posterColors[j] || '#5A2A34' }))
+        : outs.map((o) => ({ name: STATUS_LABEL[o.name] || o.name, value: o.reward, color: OUT_COLOR[o.name] || '#8F857B' }));
+      track.innerHTML = moneyBar(segs, total, track);
+    });
+
+    const paid = (f.outcomes.find((o) => o.name === 'completed') || {}).reward || 0;
+    const open = (f.outcomes.find((o) => o.name === 'open') || {}).reward || 0;
+    $('#flowNote').textContent = `${usd(total)} put up · ${usd(paid)} accepted · ${usd(open)} still open · ${usd(total - paid - open)} lost`;
+  }
+
   /* ------------------------------------------------------------ time */
 
   function seriesRows() {
@@ -564,6 +617,7 @@
     renderSwarm();
     renderFeed();
     renderCapital();
+    renderFlow();
     renderCharts();
     renderRhythm();
     renderPosters();
@@ -610,7 +664,7 @@
     let rt;
     window.addEventListener('resize', () => {
       clearTimeout(rt);
-      rt = setTimeout(() => { renderCharts(); drawSwarm(); }, 180);
+      rt = setTimeout(() => { renderCharts(); renderFlow(); drawSwarm(); }, 180);
     });
   }
 

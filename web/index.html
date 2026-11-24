@@ -26,7 +26,7 @@
 <link rel="preload" href="/fonts/InterTight-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
 <script>window.__floorData=fetch('/api/data',{cache:'no-cache'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});</script>
-<link rel="stylesheet" href="/styles.css?v=7">
+<link rel="stylesheet" href="/styles.css?v=10">
 </head>
 <body>
 <div class="glow" aria-hidden="true"></div>
@@ -140,6 +140,13 @@
         <p class="panel-k mono">Read of the book</p>
         <dl class="pairs" id="capitalPairs"></dl>
       </div>
+    </div>
+    <div class="panel flow-panel">
+      <div class="panel-head">
+        <p class="panel-k mono">The same reward, from who put it up to where it sits</p>
+        <p class="mono small muted" id="flowNote"></p>
+      </div>
+      <div class="flow-wrap" id="flow"></div>
     </div>
     <div class="panel compare">
       <div class="panel-head">
@@ -259,6 +266,6 @@
 </footer>
 
 <div class="toast mono" id="toast" role="status" aria-live="polite"></div>
-<script src="/app.js?v=7"></script>
+<script src="/app.js?v=10"></script>
 </body>
 </html>

@@ -191,6 +191,8 @@ tbody td.name{font-family:"Inter Tight",sans-serif;font-size:13px}
 .chart .zero{stroke:rgba(176,167,157,.5);stroke-width:1}
 
 /* heat */
+#modeStatus th,#modeStatus td{padding:8px 7px;font-size:11px}
+#modeStatus thead th{font-size:9px;letter-spacing:.05em}
 .heat-wide{margin-bottom:18px}
 .heat{display:grid;gap:3px;font-family:"Departure Mono",monospace;font-size:9.5px;color:var(--muted)}
 .heat .hc{width:100%;aspect-ratio:1/1;border-radius:2px;background:rgba(69,62,55,.35)}
@@ -233,20 +235,17 @@ footer{max-width:var(--max);margin:96px auto 0;padding:26px var(--pad) 42px;bord
   .stat:nth-child(2n){border-right:0}
   .stat{border-bottom:1px solid rgba(69,62,55,.55)}
 }
+@media (max-width:620px){.hide-sm{display:none}}
 .btn-icon{display:none}
+
 @media (max-width:620px){
-  .top{gap:8px}
+  :root{--pad:16px}
+  .top{gap:8px;padding:12px 16px}
   .brand img{height:20px}
   .btn-label{display:none}
   .btn-icon{display:inline}
-  .seg button{padding:6px 8px;font-size:11px}
-  #swarmCanvas{aspect-ratio:1.05/1;min-height:0}
-}
-  :root{--pad:16px}
-  .top{gap:12px;padding:12px 16px}
-  .brand img{height:22px}
   .btn{padding:8px 10px;font-size:11px}
-  .seg button{padding:7px 9px;font-size:11px}
+  .seg button{padding:6px 8px;font-size:11px}
   h1{font-size:clamp(38px,11vw,54px)}
   .lede{font-size:15.5px}
   .sec{padding-top:64px}
@@ -255,6 +254,7 @@ footer{max-width:var(--max);margin:96px auto 0;padding:26px var(--pad) 42px;bord
   .feed li{grid-template-columns:44px 72px 1fr;gap:8px}
   .feed .ac{display:none}
   .stat .v{font-size:19px}
+  #swarmCanvas{aspect-ratio:1.05/1;min-height:0}
   footer{flex-direction:column;margin-top:64px}
   .foot-r{text-align:left}
 }

@@ -331,8 +331,8 @@
     const cellMap = {};
     let busiest = null;
     (hour ? hour.cells : []).forEach((c) => {
-      cellMap[c.row + ':' + c.col] = c.count;
-      if (!busiest || c.count > busiest.count) busiest = c;
+      cellMap[c[0] + ':' + c[1]] = c[2];
+      if (!busiest || c[2] > busiest.count) busiest = { row: c[0], col: c[1], count: c[2] };
     });
     const max = (hour && hour.maxCount) || 1;
 
@@ -356,13 +356,13 @@
     if (mode) {
       const cols = mode.colKeys.slice(-14);
       const cells = {};
-      mode.cells.forEach((c) => { cells[c.row + ':' + c.col] = c; });
+      mode.cells.forEach((c) => { cells[c[0] + ':' + c[1]] = c[2]; });
       let m = '<div class="hl"></div>';
       cols.forEach((c, i) => { m += `<div class="ht">${i % 3 === 0 ? shortDate(c).split(' ')[0] : ''}</div>`; });
       mode.rowKeys.forEach((r) => {
         m += `<div class="hl" style="text-transform:none">${esc(r)}</div>`;
         cols.forEach((c) => {
-          const v = (cells[r + ':' + c] || {}).count || 0;
+          const v = cells[r + ':' + c] || 0;
           const a = v ? 0.08 + 0.9 * Math.pow(v / (mode.maxCount || 1), 0.7) : 0;
           m += `<div class="cell"><div class="hc" style="background:${v ? `rgba(217,160,151,${a.toFixed(2)})` : 'rgba(69,62,55,.35)'}" data-tip="${esc(r)} · ${esc(c)} · ${num(v)} tasks"></div></div>`;
         });
@@ -411,8 +411,9 @@
 
   function renderMethods() {
     const d = state.data;
-    const iso = d.generatedAt;
+    const iso = d.dataAsOf || d.generatedAt;
     $('#asOfTop').textContent = 'DATA AS OF ' + iso.slice(11, 16) + ' UTC';
+    $('#asOfTop').title = iso;
     $('#asOfMethods').textContent = iso;
     $('#tasksAsOf').textContent = d.tasksFetchedAt || iso;
     const A = d.chains['4217'].tasks, B = d.chains['8453'].tasks;
@@ -612,9 +613,12 @@
   }
 
   async function load(first) {
-    const r = await fetch('/api/data', { cache: 'no-cache' });
-    if (!r.ok) throw new Error('data ' + r.status);
-    const d = await r.json();
+    const pending = (first && window.__floorData)
+      ? window.__floorData
+      : fetch('/api/data', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null));
+    if (first) window.__floorData = null;
+    const d = await pending;
+    if (!d) throw new Error('data unavailable');
     const changed = !state.data || state.data.generatedAt !== d.generatedAt;
     state.data = d;
     if (changed) renderAll();

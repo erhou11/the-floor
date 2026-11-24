@@ -27,7 +27,7 @@ UA = "the-floor/1.0 (Taskmarket bounty visualizer; read-only)"
 CHAINS = {4217: {"name": "Tempo", "token": "OUSD"}, 8453: {"name": "Base", "token": "USDC"}}
 RANGES = ("7d", "30d", "90d", "all")
 REFRESH_SECONDS = int(os.environ.get("FLOOR_REFRESH_SECONDS", "600"))
-TASKS_EVERY = int(os.environ.get("FLOOR_TASKS_EVERY", "1800"))
+TASKS_EVERY = int(os.environ.get("FLOOR_TASKS_EVERY", "600"))
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR = os.path.join(ROOT, "data")
 SNAPSHOT = os.path.join(DATA_DIR, "snapshot.json")
@@ -324,12 +324,16 @@ def summarize_series(series):
 def build_snapshot(raw):
     a = raw["chains"]["4217"]
     b = raw["chains"]["8453"]
-    snap = {"generatedAt": raw["fetchedAt"], "tasksFetchedAt": raw.get("tasksFetchedAt"),
+    tasks_at = raw.get("tasksFetchedAt") or raw["fetchedAt"]
+    snap = {"generatedAt": raw["fetchedAt"], "tasksFetchedAt": tasks_at,
+            # the page says "data as of" the older of the two fetches: every
+            # figure on it was true then, and none is older than this.
+            "dataAsOf": min(raw["fetchedAt"], tasks_at),
             "refreshSeconds": REFRESH_SECONDS, "chains": {},
             "platform": {
                 "series": a["series"],
                 "seriesSummary": summarize_series(a["series"]["30d"]),
-                "heatmap": a["heatmap"],
+                "heatmap": compact_heatmaps(a["heatmap"]),
                 "breakdowns": a["breakdowns"],
                 "feed": list(a["feed"].get("items", [])),
                 # The API answers both chainId values with one platform payload.
@@ -351,6 +355,22 @@ def build_snapshot(raw):
             "tasks": summarize_tasks(tasks, chain),
         }
     return snap
+
+
+def compact_heatmaps(hm):
+    """{range: {dim: {rowKeys, colKeys, cells:[{row,col,count,volume}], maxCount}}}
+    -> same, with cells as [row, col, count] triples."""
+    out = {}
+    for rng, dims in hm.items():
+        out[rng] = {}
+        for dim, grid in dims.items():
+            out[rng][dim] = {
+                "rowKeys": grid.get("rowKeys", []),
+                "colKeys": grid.get("colKeys", []),
+                "maxCount": grid.get("maxCount", 0),
+                "cells": [[c.get("row"), c.get("col"), c.get("count", 0)] for c in grid.get("cells", [])],
+            }
+    return out
 
 
 ENDPOINT_LIST = [
@@ -515,7 +535,7 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
         if path in ("/healthz", "/api/health"):
-            return self._send(json.dumps({"ok": True, "dataAsOf": (load_snapshot() or {}).get("generatedAt")}),
+            return self._send(json.dumps({"ok": True, "dataAsOf": (load_snapshot() or {}).get("dataAsOf")}),
                               "application/json", cache="no-store")
         if path == "/api/data":
             snap = load_snapshot()

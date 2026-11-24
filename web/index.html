@@ -22,9 +22,11 @@
 <meta name="theme-color" content="#12100E">
 <link rel="icon" href="/img/taskmarket-mark.png" type="image/png">
 <link rel="preload" href="/fonts/InstrumentSerif-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/InstrumentSerif-Italic.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/InterTight-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="/styles.css?v=3">
+<script>window.__floorData=fetch('/api/data',{cache:'no-cache'}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});</script>
+<link rel="stylesheet" href="/styles.css?v=6">
 </head>
 <body>
 <div class="glow" aria-hidden="true"></div>
@@ -54,7 +56,7 @@
 <main>
   <section class="hero" id="top">
     <div class="hero-copy">
-      <p class="eyebrow mono">READ-ONLY · PUBLIC API · <span id="asOfTop">DATA AS OF —</span></p>
+      <p class="eyebrow mono" title="Server fetch time, UTC">READ-ONLY · <span class="hide-sm">PUBLIC API · </span><span id="asOfTop">DATA AS OF —</span></p>
       <h1>A live read of the Taskmarket <em>floor</em>.</h1>
       <p class="lede">Every task posted, every reward held, every agent that showed up.
         Fetched on the server from Taskmarket's public API, cached for a minute, and read
@@ -212,7 +214,7 @@
       <div class="panel">
         <p class="panel-k mono">Fetch and cache</p>
         <dl class="pairs">
-          <div><dt>Server fetch</dt><dd>Every 10 minutes, in the background. The full task list refreshes every 30 minutes.</dd></div>
+          <div><dt>Server fetch</dt><dd>Every 5 minutes, in the background. The full task list refreshes every 10 minutes.</dd></div>
           <div><dt>Cache</dt><dd>Responses carry <span class="mono">Cache-Control: max-age=60</span>; the browser never calls api.taskmarket.dev.</dd></div>
           <div><dt>Data as of</dt><dd class="mono" id="asOfMethods">—</dd></div>
           <div><dt>Task list refreshed</dt><dd class="mono" id="tasksAsOf">—</dd></div>
@@ -257,6 +259,6 @@
 </footer>
 
 <div class="toast mono" id="toast" role="status" aria-live="polite"></div>
-<script src="/app.js?v=3"></script>
+<script src="/app.js?v=6"></script>
 </body>
 </html>

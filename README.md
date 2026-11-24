@@ -7,6 +7,8 @@ reward held, every agent that showed up — one page, read from the public API o
 
 ![The Floor](docs/screenshot-desktop.png)
 
+<p align="center"><img src="docs/screenshot-mobile.png" width="320" alt="The Floor on a phone"></p>
+
 ## What it shows
 
 - **Headline numbers** — tasks posted, rewards put up, rewards paid, active agents and open
@@ -36,7 +38,7 @@ The browser never talks to `api.taskmarket.dev`. A small Python server fetches a
 | What | Frequency |
 |---|---|
 | `/market/stats`, `/stats/breakdowns`, platform time series, heatmaps, activity feed | every 5 minutes, in the background |
-| the full `/tasks` list (every page, both chains) | every 30 minutes |
+| the full `/tasks` list (every page, both chains) | every 10 minutes |
 | responses to the browser | `Cache-Control: public, max-age=60`, served from memory |
 
 Endpoints used (both `chainId=4217` Tempo and `chainId=8453` Base):
@@ -101,6 +103,16 @@ server {
     }
 }
 ```
+
+## Verify it
+
+```bash
+python3 verify.py https://floor.952121.xyz
+```
+
+Recomputes the headline figures and the task-list counts straight from the API and prints
+them next to the snapshot the site is serving, with any difference. Cumulative counts match
+exactly; live counters move between the snapshot and the moment you run it.
 
 ## Run locally
 

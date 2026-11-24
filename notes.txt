@@ -17,7 +17,8 @@ Endpoints used (both chainId=4217 Tempo and chainId=8453 Base):
 
 Refresh and cache:
   Server-side fetch every 5 minutes in a background thread; the full task list
-  (all pages) every 30 minutes. Snapshot persisted to disk (data/snapshot.json) so a
+  (all pages) every 10 minutes. "Data as of" is the older of the two, so no figure
+  on the page is older than the timestamp shown. Snapshot persisted to disk (data/snapshot.json) so a
   restart serves immediately. The browser never calls api.taskmarket.dev: it reads
   /api/data from the same origin, served with Cache-Control: public, max-age=60,
   no-transform. Average response from memory: a few milliseconds.

@@ -1,32 +1,52 @@
-Live URL:   https://floor.952121.xyz
-Repo URL:   https://github.com/erhou11/the-floor
-Stack:      Python 3 standard library (fetch + aggregate + cache + HTTP server),
-            vanilla JavaScript with hand-drawn SVG charts and a canvas swarm view,
-            no front-end framework, no third-party scripts, no analytics.
-            Fonts: Instrument Serif, Inter Tight, Departure Mono (brand kit, self-hosted).
-Hosting:    Ubuntu 24.04 VPS, systemd service behind nginx (TLS), Cloudflare in front.
-            One command: sudo ./deploy.sh   (or: docker compose up -d --build)
+The Floor — a live read of the Taskmarket market
+================================================
 
-Endpoints used (both chainId=4217 Tempo and chainId=8453 Base):
+Live URL:  https://floor.952121.xyz
+Repo URL:  https://github.com/erhou11/the-floor
+
+Stack
+  Python 3 standard library only: one process fetches the API, aggregates it, caches it
+  and serves the page and the JSON. The front end is plain JavaScript with hand-drawn
+  SVG charts and a canvas view of the swarm; no framework, no build step, no CDN.
+  Fonts (Instrument Serif, Inter Tight, Departure Mono) and the Taskmarket lockup are
+  self-hosted from the brand kit, unmodified.
+
+Hosting
+  Ubuntu 24.04 VPS, systemd service (Restart=always) behind nginx with a Let's Encrypt
+  certificate, Cloudflare in front. One-command deploy, tested on that host:
+      sudo ./deploy.sh
+  or, without a host install:
+      docker compose up -d --build
+
+Endpoints used (both chainId=4217 Tempo and chainId=8453 Base)
   /api/market/stats?chainId=…
   /api/stats/breakdowns?chainId=…
   /api/stats/platform-time-series?chainId=…&range=7d|30d|90d|all&bucket=day
   /api/stats/activity-heatmap?chainId=…&range=…&dimension=mode|hourOfWeek
   /api/stats/activity-feed?chainId=…&limit=50
-  /api/tasks?chainId=…&sort=newest&limit=100&cursor=…  (every page, both chains)
+  /api/tasks?chainId=…&sort=newest&limit=100&cursor=…   (every page, both chains)
 
-Refresh and cache:
-  Server-side fetch every 5 minutes in a background thread; the full task list
-  (all pages) every 10 minutes. "Data as of" is the older of the two, so no figure
-  on the page is older than the timestamp shown. Snapshot persisted to disk (data/snapshot.json) so a
-  restart serves immediately. The browser never calls api.taskmarket.dev: it reads
-  /api/data from the same origin, served with Cache-Control: public, max-age=60,
-  no-transform. Average response from memory: a few milliseconds.
-  "Data as of" is shown at the top of every view and in Methods, with the task-list
-  fetch time separately; /api/snapshot.json (computed) and /api/raw.json (exact
-  payloads) let anyone reproduce each number.
+Refresh and cache
+  A background thread refreshes the market, breakdown, time-series, heatmap and feed
+  endpoints every 5 minutes, and the full task list (all pages, both chains) every
+  10 minutes. Snapshots are written to data/snapshot.json, so a restart serves
+  instantly. "Data as of" is the older of the two fetch times, so no figure on the
+  page is older than the timestamp shown.
+  The browser never calls api.taskmarket.dev. It reads /api/data from the same origin:
+  served from memory in a few milliseconds, with Cache-Control: public, max-age=60,
+  no-transform. /api/snapshot.json (computed) and /api/raw.json (the exact API payloads)
+  let anyone reproduce every number; `python3 verify.py` does that check for you.
 
-Note on the API: /stats/platform-time-series, /stats/breakdowns, /stats/activity-heatmap
-and /stats/activity-feed answer both chainIds with one platform-wide payload (identical
-at every refresh). The page labels those as platform and takes per-chain figures
-(posters, rewards, submissions, outcomes) from /tasks and /market/stats.
+A note on the API
+  /stats/platform-time-series, /stats/breakdowns, /stats/activity-heatmap and
+  /stats/activity-feed answer both chainIds with one platform-wide payload — identical
+  at every refresh. The page labels those as platform, and takes per-chain figures
+  (posters, rewards put up, submissions, outcomes) from /tasks and /market/stats.
+
+Checks done
+  Headless Chromium, phone viewport, 4 Mbps / 120 ms / 4x CPU: load 1.1–1.3 s, usable
+  2.1–2.6 s, 10 same-origin requests, zero third-party requests, zero console errors.
+  Five figures compared with the API as of the page's timestamp: open tasks, active
+  agents, tasks posted 7d, rewards paid 7d, listed tasks and distinct posters — all
+  equal; only the live submission count moved (+3) while the check ran.
+  Read-only: no wallet connection, no analytics, no tracking, addresses shown short.

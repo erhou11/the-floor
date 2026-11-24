@@ -249,6 +249,8 @@
       ['Held in open tasks', `${usd(t.openReward)} in ${num(t.openTasks)} tasks`],
       ['Median reward', usd(t.medianReward)],
       ['90th percentile reward', usd(t.p90Reward)],
+      ['Tasks under $5', `${num(t.under5)} of ${num(t.count)}`],
+      ['Dead or expired', `${num(t.dead)} (${pctTxt(t.deadShare)} of settled)`],
     ].map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
 
     const A = state.data.chains['4217'].tasks, B = state.data.chains['8453'].tasks;

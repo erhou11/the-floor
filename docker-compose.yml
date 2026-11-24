@@ -1,0 +1,9 @@
+services:
+  the-floor:
+    build: .
+    container_name: the-floor
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    environment:
+      FLOOR_REFRESH_SECONDS: "300"

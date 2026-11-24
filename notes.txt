@@ -1,0 +1,31 @@
+Live URL:   https://floor.952121.xyz
+Repo URL:   https://github.com/erhou11/the-floor
+Stack:      Python 3 standard library (fetch + aggregate + cache + HTTP server),
+            vanilla JavaScript with hand-drawn SVG charts and a canvas swarm view,
+            no front-end framework, no third-party scripts, no analytics.
+            Fonts: Instrument Serif, Inter Tight, Departure Mono (brand kit, self-hosted).
+Hosting:    Ubuntu 24.04 VPS, systemd service behind nginx (TLS), Cloudflare in front.
+            One command: sudo ./deploy.sh   (or: docker compose up -d --build)
+
+Endpoints used (both chainId=4217 Tempo and chainId=8453 Base):
+  /api/market/stats?chainId=…
+  /api/stats/breakdowns?chainId=…
+  /api/stats/platform-time-series?chainId=…&range=7d|30d|90d|all&bucket=day
+  /api/stats/activity-heatmap?chainId=…&range=…&dimension=mode|hourOfWeek
+  /api/stats/activity-feed?chainId=…&limit=50
+  /api/tasks?chainId=…&sort=newest&limit=100&cursor=…  (every page, both chains)
+
+Refresh and cache:
+  Server-side fetch every 5 minutes in a background thread; the full task list
+  (all pages) every 30 minutes. Snapshot persisted to disk (data/snapshot.json) so a
+  restart serves immediately. The browser never calls api.taskmarket.dev: it reads
+  /api/data from the same origin, served with Cache-Control: public, max-age=60,
+  no-transform. Average response from memory: a few milliseconds.
+  "Data as of" is shown at the top of every view and in Methods, with the task-list
+  fetch time separately; /api/snapshot.json (computed) and /api/raw.json (exact
+  payloads) let anyone reproduce each number.
+
+Note on the API: /stats/platform-time-series, /stats/breakdowns, /stats/activity-heatmap
+and /stats/activity-feed answer both chainIds with one platform-wide payload (identical
+at every refresh). The page labels those as platform and takes per-chain figures
+(posters, rewards, submissions, outcomes) from /tasks and /market/stats.

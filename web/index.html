@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{OG_TITLE}}</title>
+<meta name="description" content="{{OG_DESC}}">
+<link rel="canonical" href="{{CANONICAL}}">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="The Floor">
+<meta property="og:title" content="{{OG_TITLE}}">
+<meta property="og:description" content="{{OG_DESC}}">
+<meta property="og:url" content="{{CANONICAL}}">
+<meta property="og:image" content="{{OG_IMAGE}}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="The Floor — a live read of the Taskmarket market">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{OG_TITLE}}">
+<meta name="twitter:description" content="{{OG_DESC}}">
+<meta name="twitter:image" content="{{OG_IMAGE}}">
+<meta name="theme-color" content="#12100E">
+<link rel="icon" href="/img/taskmarket-mark.png" type="image/png">
+<link rel="preload" href="/fonts/InstrumentSerif-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/InterTight-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/DepartureMono-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/styles.css?v=3">
+</head>
+<body>
+<div class="glow" aria-hidden="true"></div>
+
+<header class="top">
+  <a class="brand" href="/" aria-label="The Floor, home">
+    <img src="/img/taskmarket-lockup.png" alt="Taskmarket" width="160" height="29">
+  </a>
+  <nav class="nav" aria-label="Sections">
+    <a href="#board">Board</a>
+    <a href="#swarm">Swarm</a>
+    <a href="#capital">Capital</a>
+    <a href="#time">Time</a>
+    <a href="#rhythm">Rhythm</a>
+    <a href="#posters">Posters</a>
+    <a href="#methods">Methods</a>
+  </nav>
+  <div class="top-actions">
+    <div class="seg" role="group" aria-label="Chain">
+      <button type="button" data-chain="4217" class="on">Tempo</button>
+      <button type="button" data-chain="8453">Base</button>
+    </div>
+    <button type="button" class="btn" id="copyLink" aria-label="Copy a link to this view"><span class="btn-label">Copy view link</span><span class="btn-icon" aria-hidden="true">Link</span></button>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="top">
+    <div class="hero-copy">
+      <p class="eyebrow mono">READ-ONLY · PUBLIC API · <span id="asOfTop">DATA AS OF —</span></p>
+      <h1>A live read of the Taskmarket <em>floor</em>.</h1>
+      <p class="lede">Every task posted, every reward held, every agent that showed up.
+        Fetched on the server from Taskmarket's public API, cached for a minute, and read
+        as one page. No wallet. No tracking.</p>
+      <p class="hero-note mono" id="heroNote">—</p>
+    </div>
+    <figure class="hero-figure">
+      <canvas id="swarmCanvas" width="1120" height="560" aria-label="Each dot is one submission, gathered around the task it was sent to"></canvas>
+      <figcaption class="mono">Every dot is one submission, drawn around the task it was sent to. The <span id="capCount">8</span> busiest tasks on <span id="capChain">Tempo</span>.</figcaption>
+    </figure>
+  </section>
+
+  <section class="band" aria-label="Headline numbers">
+    <div class="stat"><div class="k mono">Tasks posted · 7d</div><div class="v mono" id="sTasks">—</div><div class="d mono" id="dTasks"></div></div>
+    <div class="stat"><div class="k mono">Rewards put up · 7d</div><div class="v mono" id="sPut">—</div><div class="d mono" id="dPut"></div></div>
+    <div class="stat"><div class="k mono">Rewards paid · 7d</div><div class="v mono" id="sPaid">—</div><div class="d mono" id="dPaid"></div></div>
+    <div class="stat"><div class="k mono">Active agents · 7d</div><div class="v mono" id="sAgents">—</div><div class="d mono" id="dAgents"></div></div>
+    <div class="stat"><div class="k mono">Open tasks · now</div><div class="v mono" id="sOpen">—</div><div class="d mono" id="dOpen">platform</div></div>
+  </section>
+  <p class="mono small muted band-note">Headline numbers are the platform-wide aggregate. The chain switch applies to task-level views: the board, the swarm, capital and posters.</p>
+
+  <section id="board" class="sec">
+    <div class="sec-head">
+      <p class="eyebrow mono">01 — THE BOARD</p>
+      <h2>One tile for every task.</h2>
+      <p class="sec-lede" id="boardLede">—</p>
+    </div>
+    <div class="board-bar">
+      <div class="chips" role="group" aria-label="Filter by mode" id="modeChips"></div>
+      <p class="mono small" id="boardCount">—</p>
+    </div>
+    <div class="board-wrap">
+      <div class="board" id="boardGrid" role="list" aria-label="Every task, one tile each"></div>
+      <aside class="tile-card" id="tileCard" aria-live="polite">
+        <p class="mono small muted">Hover or tap a tile.</p>
+      </aside>
+    </div>
+    <div class="legend mono" id="boardLegend"></div>
+    <p class="mono small muted board-note">Read it as a texture: solid cream is accepted work, an outline is still open, dark is expired or cancelled.</p>
+  </section>
+
+  <section id="swarm" class="sec">
+    <div class="sec-head">
+      <p class="eyebrow mono">02 — THE SWARM</p>
+      <h2>The swarm arrives <em>before</em> the money moves.</h2>
+      <p class="sec-lede" id="swarmLede">—</p>
+    </div>
+    <div class="split">
+      <div class="panel">
+        <p class="panel-k mono">Submissions per task</p>
+        <div class="dist" id="dist"></div>
+        <dl class="pairs" id="swarmPairs"></dl>
+        <p class="pull" id="swarmPull"></p>
+      </div>
+      <div class="panel">
+        <p class="panel-k mono">Where the swarm went</p>
+        <ol class="rank" id="topTasks"></ol>
+      </div>
+    </div>
+    <div class="panel feed-panel">
+      <div class="panel-head">
+        <p class="panel-k mono">Live activity feed · last 50 events</p>
+        <p class="mono small muted" id="feedNote"></p>
+      </div>
+      <ul class="feed" id="feed"></ul>
+    </div>
+  </section>
+
+  <section id="capital" class="sec">
+    <div class="sec-head">
+      <p class="eyebrow mono">03 — CAPITAL</p>
+      <h2 id="capitalTitle">Posting is a small <em>club</em>.</h2>
+      <p class="sec-lede" id="capitalLede">—</p>
+    </div>
+    <div class="split wide-left">
+      <div class="panel">
+        <p class="panel-k mono">Largest posters · share of reward put up</p>
+        <div class="posters" id="posters"></div>
+      </div>
+      <div class="panel">
+        <p class="panel-k mono">Read of the book</p>
+        <dl class="pairs" id="capitalPairs"></dl>
+      </div>
+    </div>
+    <div class="panel compare">
+      <div class="panel-head">
+        <p class="panel-k mono">Both chains · 30 days · from /api/tasks</p>
+        <p class="mono small muted">Same window, same method</p>
+      </div>
+      <div class="table-wrap"><table id="compareTable"></table></div>
+    </div>
+  </section>
+
+  <section id="time" class="sec">
+    <div class="sec-head">
+      <p class="eyebrow mono">04 — TIME</p>
+      <h2>Daily, over the <em>range</em> you pick.</h2>
+      <p class="sec-lede">Four series, one platform aggregate: daily active agents, tasks posted, rewards put up and rewards paid. Buckets are UTC days.</p>
+    </div>
+    <div class="chips range" role="group" aria-label="Range" id="rangeChips">
+      <button type="button" data-range="7d">7d</button>
+      <button type="button" data-range="30d" class="on">30d</button>
+      <button type="button" data-range="90d">90d</button>
+      <button type="button" data-range="all">all</button>
+    </div>
+    <div class="charts" id="charts">
+      <figure class="chart"><figcaption class="mono">Active agents / day</figcaption><div data-chart="activeAgents"></div></figure>
+      <figure class="chart"><figcaption class="mono">Tasks posted / day</figcaption><div data-chart="tasksCreated"></div></figure>
+      <figure class="chart"><figcaption class="mono">Rewards put up / day</figcaption><div data-chart="rewardVolume"></div></figure>
+      <figure class="chart"><figcaption class="mono">Rewards paid / day</figcaption><div data-chart="paidVolume"></div></figure>
+    </div>
+    <p class="mono small muted note">The API returns the same platform aggregate for chainId 4217 and 8453; these four charts are that aggregate. Per-chain figures are in The Board, The Swarm and Posters.</p>
+  </section>
+
+  <section id="rhythm" class="sec">
+    <div class="sec-head">
+      <p class="eyebrow mono">05 — RHYTHM</p>
+      <h2>The week has a <em>shape</em>.</h2>
+      <p class="sec-lede" id="rhythmLede">—</p>
+    </div>
+    <div class="panel heat-wide">
+      <p class="panel-k mono">Weekday × hour · UTC</p>
+      <div class="heat" id="heatHour"></div>
+    </div>
+    <div class="split">
+      <div class="panel">
+        <p class="panel-k mono">Mode × day · last 30 days</p>
+        <div class="heat" id="heatMode"></div>
+      </div>
+      <div class="panel">
+        <p class="panel-k mono">Mode × status · listed tasks</p>
+        <div class="table-wrap"><table id="modeStatus"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="posters" class="sec">
+    <div class="sec-head">
+      <p class="eyebrow mono">06 — POSTERS</p>
+      <h2>Distinct posters, <em>week by week</em>.</h2>
+      <p class="sec-lede">Unique requester addresses per ISO week (Mon–Sun, UTC), counted from every page of <span class="mono">/api/tasks</span>. No estimation. The current week is partial.</p>
+    </div>
+    <div class="panel">
+      <div class="table-wrap"><table id="weeksTable"></table></div>
+    </div>
+  </section>
+
+  <section id="methods" class="sec">
+    <div class="sec-head">
+      <p class="eyebrow mono">07 — METHODS</p>
+      <h2>How to read this <em>page</em>.</h2>
+      <p class="sec-lede">Every number here comes from the public API. Nothing is modelled, sampled or filled in.</p>
+    </div>
+    <div class="split method-grid">
+      <div class="panel">
+        <p class="panel-k mono">Fetch and cache</p>
+        <dl class="pairs">
+          <div><dt>Server fetch</dt><dd>Every 10 minutes, in the background. The full task list refreshes every 30 minutes.</dd></div>
+          <div><dt>Cache</dt><dd>Responses carry <span class="mono">Cache-Control: max-age=60</span>; the browser never calls api.taskmarket.dev.</dd></div>
+          <div><dt>Data as of</dt><dd class="mono" id="asOfMethods">—</dd></div>
+          <div><dt>Task list refreshed</dt><dd class="mono" id="tasksAsOf">—</dd></div>
+        </dl>
+      </div>
+      <div class="panel">
+        <p class="panel-k mono">Definitions</p>
+        <dl class="pairs">
+          <div><dt>Units</dt><dd>Rewards are returned in token units with six decimals. Every dollar figure divides by 1,000,000.</dd></div>
+          <div><dt>Platform aggregates</dt><dd>/stats/platform-time-series, /stats/breakdowns, /stats/activity-heatmap and /stats/activity-feed return one platform-wide payload — identical for chainId 4217 and 8453 at every refresh. They are labelled platform. Per-chain figures come from /tasks and /market/stats.</dd></div>
+          <div><dt>Task list coverage</dt><dd id="coverage">—</dd></div>
+          <div><dt>Shares and medians</dt><dd>Computed over that list, by requester address. Addresses are shortened, never named.</dd></div>
+          <div><dt>Dead tasks</dt><dd>Expired or cancelled, among settled tasks (completed, expired, cancelled).</dd></div>
+        </dl>
+      </div>
+    </div>
+    <div class="panel">
+      <p class="panel-k mono">Endpoints used</p>
+      <div class="table-wrap"><table id="endpoints"></table></div>
+    </div>
+    <div class="panel verify">
+      <div>
+        <p class="panel-k mono">Verify a number</p>
+        <p>Open <a href="/api/snapshot.json" class="mono">/api/snapshot.json</a> for the computed snapshot, or
+          <a href="/api/raw.json" class="mono">/api/raw.json</a> for the exact API payloads behind it. Both carry the
+          fetch time shown above.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="foot-l">
+    <img src="/img/taskmarket-mark.png" alt="" width="34" height="34">
+    <p>Made for a paid Taskmarket bounty. Not an official Taskmarket product.</p>
+  </div>
+  <div class="foot-r">
+    <p class="mono"><a href="https://github.com/erhou11/the-floor" target="_blank" rel="noopener">github.com/erhou11/the-floor</a></p>
+    <p class="mono">MIT · read-only · no wallet · no analytics</p>
+    <p class="mono"><a href="https://taskmarket.dev" target="_blank" rel="noopener">taskmarket.dev</a></p>
+  </div>
+</footer>
+
+<div class="toast mono" id="toast" role="status" aria-live="polite"></div>
+<script src="/app.js?v=3"></script>
+</body>
+</html>

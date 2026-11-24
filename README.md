@@ -134,5 +134,6 @@ Dockerfile        python:3.12-slim image
 
 ## Licence
 
-MIT. The fonts are under the SIL Open Font License; the Taskmarket mark and lockup are
-Taskmarket's own, used under the bounty's brand kit terms.
+MIT (see `LICENSE`). Bundled fonts — Instrument Serif, Inter Tight, Departure Mono — are under
+the SIL Open Font License. The Taskmarket mark, lockup and brand assets belong to Taskmarket and
+are used under the terms of the bounty's brand kit.

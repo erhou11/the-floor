@@ -255,6 +255,9 @@ footer{max-width:var(--max);margin:96px auto 0;padding:26px var(--pad) 42px;bord
 @media (max-width:620px){
   :root{--pad:16px}
   .panel-head{flex-direction:column;align-items:flex-start;gap:4px}
+  .board-bar{flex-direction:column;align-items:flex-start;gap:8px}
+  .chips{gap:6px}
+  .chips button{padding:5px 9px;font-size:11px}
   .top{gap:8px;padding:12px 16px}
   .brand img{height:20px}
   .btn-label{display:none}

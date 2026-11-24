@@ -489,6 +489,7 @@
   const canvasState = { hubs: [], base: null, raf: 0 };
 
   function drawSwarm() {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const cv = $('#swarmCanvas');
     const rect = cv.getBoundingClientRect();
     const W = Math.max(280, Math.round(rect.width)), H = Math.max(200, Math.round(rect.height));
@@ -606,7 +607,7 @@
       }
       canvasState.raf = requestAnimationFrame(loop);
     };
-    if (!canvasState.raf) canvasState.raf = requestAnimationFrame(loop);
+    if (!reduce && !canvasState.raf) canvasState.raf = requestAnimationFrame(loop);
   }
 
   /* ------------------------------------------------------------ render */
